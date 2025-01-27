@@ -6,7 +6,7 @@ import os
 from tqdm import tqdm
 
 
-num_epochs = 1
+num_epochs = 5
 
 print("Load datasets...")
 # Path to the preprocessed dataset
@@ -15,7 +15,7 @@ test_dataset_path = os.path.join("data", "test_dataset.pt")
 
 # Load the preprocessed dataset
 train_images, train_labels = torch.load(train_dataset_path, weights_only=False)
-test_images, test_labels = torch.load(train_dataset_path, weights_only=False)
+test_images, test_labels = torch.load(test_dataset_path, weights_only=False)
 
 print(f"Loaded train images shape: {train_images.shape}, Labels shape: {train_labels.shape}")
 print(f"Loaded test images shape: {test_images.shape}, Labels shape: {test_labels.shape}")
@@ -36,7 +36,7 @@ class myDataset(Dataset):
 # Create Dataset and DataLoader
 train_dataset = myDataset(train_images, train_labels)
 test_dataset = myDataset(test_images, test_labels)
-train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+train_loader = DataLoader(train_dataset, batch_size=12, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=True)
 
 
@@ -59,7 +59,7 @@ def train(epoch):
     model.train()
     losses = []
     for _, (data, target) in tqdm(enumerate(train_loader)):
-        forward_inputs = [data.reshape(len(data),784).numpy(),target.numpy().astype(np.int64)]
+        forward_inputs = [data.numpy(),target.numpy().astype(np.int64)]
         train_loss, _ = model(*forward_inputs)
         optimizer.step()
         model.lazy_reset_grad()
@@ -74,7 +74,7 @@ def test(epoch):
     metric = evaluate.load('accuracy')
 
     for _, (data, target) in tqdm(enumerate(train_loader)):
-        forward_inputs = [data.reshape(len(data),784).numpy(),target.numpy().astype(np.int64)]
+        forward_inputs = [data.numpy(),target.numpy().astype(np.int64)]
         test_loss, logits = model(*forward_inputs)
         metric.add_batch(references=target, predictions=get_pred(logits))
         losses.append(test_loss)
